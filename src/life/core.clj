@@ -42,10 +42,8 @@
   (doseq [[[x y] state] world]
     (let [x (* x 10) y (* y 10)]
       (doto graphics
-        (.setColor Color/BLACK)
-        (.fillRect x y 10 10)   ; border
         (.setColor (if state Color/GREEN Color/WHITE))
-        (.fillRect x y 9 9))))) ; cell
+        (.fillRect x y 9 9)))))
 
 (defn panel []
   (proxy [JPanel ActionListener] []
@@ -55,7 +53,7 @@
 (defn frame []
   (let [{:keys [x y]} (meta @world)]
     (doto (JFrame. "Conway's Game of Life")
-      (.setSize (+ 17 (* x 10)) (+ 39 (* y 10)))
+      (.setSize (* 10 x) (+ 30 (* 10 y)))
       (.setVisible true)
       (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE))))
 
@@ -73,15 +71,15 @@
                  y (int (/ (.getY e) 10))
                  position [x y]]
              (condp == (.getButton e)
-               (MouseEvent/BUTTON1)
+               (MouseEvent/BUTTON1) ; left-click
                (do (.stop timer)
                    (swap! world toggle-position position)
-                   (.repaint panel))
-               (MouseEvent/BUTTON3)
+                   (.repaint panel))               
+               (MouseEvent/BUTTON3) ; right-click
                (if (.isRunning timer)
                  (.stop timer)
-                 (.start timer))
-               (MouseEvent/BUTTON2)
+                 (.start timer))               
+               (MouseEvent/BUTTON2) ; middle-click
                (let [{:keys [x y]} (meta @world)]
                  (.stop timer)
                  (swap! world (constantly (create-world x y)))
@@ -99,5 +97,6 @@
                (swap! world toggle-position position)
                (swap! painted conj position))
              (.repaint panel))))))
+    (.setBackground panel Color/BLACK)
     (.setFocusable panel true)
     (.add frame panel)))
